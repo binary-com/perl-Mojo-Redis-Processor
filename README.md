@@ -30,24 +30,31 @@ Publisher code will look like:
 
 Processor code will look like: 
 
-
     use Mojo::Redis::PubSub;
+	use Parallel::ForkManager;
 
-	$mp = Mojo::Redis::PubSub->new({
-		redis_read=>  'redis://127.0.0.1:6381/0',
-		redis_write=> 'redis://@passs:127.0.0.1:6380/0',
-		key_prefix  => 'binary::',
-	});
+	$pm = new Parallel::ForkManager($MAX_WORKERS);
 
-	$data = $mp->next();
-	local $SIG{ALRM} = sub { warn "no signal for $timeout seconds\n"; exit(0) };
-	alarm $timeout;
+	while (1) {
 
-	$redis_channel=$mp->subscribe_trigger(sub {
-		my $payload = shift;
-		$mp->publish(price($mp));
+		my $pid = $pm->start and next; 
+
+		$mp = Mojo::Redis::PubSub->new({
+			redis_read=>  'redis://127.0.0.1:6381/0',
+			redis_write=> 'redis://@passs:127.0.0.1:6380/0',
+			key_prefix  => 'binary::',
+		});
+
+		$data = $mp->next();
+		local $SIG{ALRM} = sub { $pm->finish; };
 		alarm $timeout;
-	});
+
+		$redis_channel=$mp->subscribe_trigger(sub {
+			my $payload = shift;
+			$mp->publish(price($mp));
+			alarm $timeout;
+		});
+	}
 
 
 
