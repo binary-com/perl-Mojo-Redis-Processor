@@ -36,7 +36,6 @@ Processor code will look like:
 	$pm = new Parallel::ForkManager($MAX_WORKERS);
 
 	while (1) {
-
 		my $pid = $pm->start and next; 
 
 		$mp = Mojo::Redis::PubSub->new({
