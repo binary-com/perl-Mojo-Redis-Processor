@@ -45,7 +45,7 @@ sub on_trigger {
 	my $self = shift;
 	my $pricer = shift;
 
-	while($new_event){	
+	while($new_event){
 		alarm $timeout;
 		$return $pricer->($self->{data});
 	}
