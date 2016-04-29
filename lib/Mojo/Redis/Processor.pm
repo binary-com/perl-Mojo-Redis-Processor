@@ -122,7 +122,7 @@ sub _initialize {
     $self->{prefix}      = 'Redis::Processor::'       if !exists $self->{prefix};
     $self->{expire}      = 60                         if !exists $self->{expire};
     $self->{usleep}      = 10                         if !exists $self->{usleep};
-    $self->{redis_read}  = 'redis://127.0.0.1:6379/0' if !exists $self->{redis_write};
+    $self->{redis_read}  = 'redis://127.0.0.1:6379/0' if !exists $self->{redis_read};
     $self->{redis_write} = $self->{redis_read}        if !exists $self->{redis_write};
     $self->{retry}       = 1                          if !exists $self->{retry};
 
