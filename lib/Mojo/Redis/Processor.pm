@@ -10,7 +10,89 @@ use JSON::XS qw(encode_json decode_json);
 use strict;
 use warnings;
 
-our $VERSION = '0.1';
+=head1 NAME
+
+Mojo::Redis::Processor - Encapsulates the process for a Mojo app to send an expensive job to a daemon using Redis underneath and Redis SET NX and Redis Pub/Sub.
+
+=head1 VERSION
+
+Version 0.01
+
+=cut
+
+our $VERSION = '0.01';
+
+=head1 DESCRIPTION
+
+This module is specialized to help a Mojo app to send an expensive job request to be processed in parallel in a separete daemon. Communication is handled through Redis.
+
+This is specialized for processing tasks that can be common between different running Mojo children. Race condition between children to add a new tasks is handle by Redis SET NX capability.
+
+=head1 Example
+
+Mojo app which wants to send data and get stream of processed results will look like:
+
+    use Mojo::Redis::Processor;
+    use Mojolicious::Lite;
+
+    my $rp = Mojo::Redis::Processor->new({
+        data       => 'Data',
+        trigger    => 'R_25',
+    });
+
+    $rp->send();
+    my $redis_channel = $rp->on_processed(
+        sub {
+            my ($message, $channel) = @_;
+            print "Got a new result [$message]\n";
+        });
+
+    app->start;
+
+Try it like:
+
+    $ perl -Ilib ws.pl daemon 
+
+
+Processor daemon code will look like: 
+
+    use Mojo::Redis::Processor;
+    use Parallel::ForkManager;
+
+    use constant MAX_WORKERS  => 1;
+
+    $pm = new Parallel::ForkManager(MAX_WORKERS);
+
+    while (1) {
+        my $pid = $pm->start and next;
+
+        my $rp = Mojo::Redis::Processor->new;
+
+        $next = $rp->next();
+        if ($next) {
+            print "next job started [$next].\n";
+
+            $redis_channel = $rp->on_trigger(
+                sub {
+                    my $payload = shift;
+                    print "processing payload\n";
+                    return rand(100);
+                });
+            print "Job done, exiting the child!\n";
+        } else {
+            print "no job found\n";
+            sleep 1;
+        }
+        $pm->finish;
+    }
+
+Try it like:
+
+    $ perl -Ilib daemon.pl
+
+Daemon needs to pick a forking method and also handle ide processes and timeouts.
+=cut
+
 
 my @ALLOWED = qw(data trigger redis_read redis_write prefix expire usleep retry);
 
@@ -90,6 +172,11 @@ sub _daemon_redis {
     return $self->{daemon_redis_comm};
 }
 
+=head3 C<< send()  >>
+
+Will send the Mojo app data processing request. This is mainly a queueing job. Job will expire if no worker take it in time. If more than one app try to register the same job Redis SET NX will only assign one of them to proceed.
+
+=cut
 sub send {
     my $self = shift;
 
@@ -100,6 +187,11 @@ sub send {
     }
 }
 
+=head3 C<< on_processed($code)  >>
+
+Mojo app will call this to register a code reference that will be triggered everytime there is a result. Results will be triggered and published based on trigger option.
+
+=cut
 sub on_processed {
     my $self = shift;
     my $code = shift;
@@ -113,6 +205,11 @@ sub on_processed {
     $self->_read->subscribe([$self->{_processed_channel}]);
 }
 
+=head3 C<< next()  >>
+
+Daemon will call this to start the next job. If it return empty it meam there was no job found after "retry".
+
+=cut
 sub next {
     my $self = shift;
 
@@ -144,6 +241,11 @@ sub _expired {
     return;
 }
 
+=head3 C<< on_trigger()  >>
+
+Daemon will call this to register a processor code reference that will be called everytime trigger happens. The return value will be passed to Mojo apps which requested it using Redis Pub/Sub system.
+
+=cut
 sub on_trigger {
     my $self   = shift;
     my $pricer = shift;
