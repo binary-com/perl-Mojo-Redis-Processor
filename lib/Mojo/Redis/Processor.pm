@@ -11,7 +11,7 @@ use strict;
 use warnings;
 
 my @REQUIRED = qw(redis_read);
-my @ALLOWED = (qw(data trigger redis_write prefix expire usleep), @REQUIRED);
+my @ALLOWED = (qw(data trigger redis_write prefix expire usleep retry), @REQUIRED);
 
 sub new {
     my $class = shift;
@@ -33,12 +33,14 @@ sub _initialize {
     my $self = shift;
     $self->{prefix}      = 'Redis::Processor::' if !exists $self->{prefix};
     $self->{expire}      = 60                   if !exists $self->{expire};
-    $self->{usleep}      = 50                   if !exists $self->{usleep};
+    $self->{usleep}      = 10                   if !exists $self->{usleep};
     $self->{redis_write} = $self->{redis_read}  if !exists $self->{redis_write};
+    $self->{retry}       = 1                    if !exists $self->{retry};
 
     $self->{_job_counter}       = $self->{prefix} . 'job';
     $self->{_worker_counter}    = $self->{prefix} . 'worker';
     $self->{_processed_channel} = $self->{prefix} . 'result';
+
 }
 
 sub _job_load {
@@ -84,9 +86,9 @@ sub send {
     my $self = shift;
 
     if ($self->_write->setnx($self->_unique, 1)) {
-        my $job = $self->_write->incr($self->_job_counter);
-        $self->_write->expire($self->_unique, $self->{expire});
+        my $job = $self->_write->incr($self->{_job_counter});
         $self->_write->set($self->_job_load($job), $self->_payload);
+        $self->_write->expire($self->_unique, $self->{expire});
     }
 }
 
@@ -100,42 +102,38 @@ sub on_processed {
             $self->_write->expire($self->_unique, $self->{expire});
             $code->($msg, $channel);
         });
-    $self->_read->subscribe([$self->_processed_channel]);
-}
-
-sub _init_next {
-    my $self = shift;
-
-    my $min = $self->_write->get($self->_job_counter);
-    $self->_write->set($self->_worker_counter, $min - 1);
-
-    $self->{_next_initialized} = 1;
+    $self->_read->subscribe([$self->{_processed_channel}]);
 }
 
 sub next {
     my $self = shift;
 
-    $self->_init_next if !$self->{_next_initialized};
+    my $last_job    = $self->_read->get($self->{_job_counter});
+    my $last_worker = $self->_read->get($self->{_worker_counter});
 
-    my $next = $self->_write->incr($self->_worker_counter);
+    return if (!$last_job or ($last_worker && $last_job <= $last_worker));
+
+    my $next = $self->_write->incr($self->{_worker_counter});
     my $payload;
 
-    while (not $payload = $self->_read->get($self->_job_load($next))) {
+    for (my $i = 0; $i < $self->{retry}; $i++) {
+        last if $payload = $self->_read->get($self->_job_load($next));
         usleep($self->{usleep});
     }
+    return if not $payload;
+
     my $tmp = JSON::XS::decode_json($payload);
 
     $self->{data}    = $tmp->[0];
     $self->{trigger} = $tmp->[1];
-    return {
-        job     => $next,
-        payload => $payload
-    };
+
+    return $next;
 }
 
 sub _expired {
     my $self = shift;
     return 1 if $self->_read->ttl($self->_unique) <= 0;
+    print $self->_unique, " : ", $self->_read->ttl($self->_unique), "\n";
     return;
 }
 
@@ -156,7 +154,7 @@ sub _publish {
     my $self   = shift;
     my $result = shift;
 
-    $self->_write->publish($self->_processed_channel, $result);
+    $self->_write->publish($self->{_processed_channel}, $result);
 }
 
 1;
