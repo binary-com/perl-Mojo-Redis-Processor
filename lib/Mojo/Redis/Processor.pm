@@ -1,4 +1,4 @@
-package Redis::Processor;
+package Mojo::Redis::Processor;
 
 use Carp;
 use Array::Utils qw (array_minus);

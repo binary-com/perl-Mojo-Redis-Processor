@@ -1,9 +1,9 @@
-use Redis::Processor;
+use Mojo::Redis::Processor;
 use Mojolicious::Lite;
 
-my $rp = Redis::Processor->new({
+my $rp = Mojo::Redis::Processor->new({
     redis_read => 'redis://127.0.0.1:6379/0',
-    data       => 'x',
+    data       => 'Data',
     trigger    => 'R_25',
 });
 
