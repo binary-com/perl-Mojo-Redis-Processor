@@ -16,7 +16,6 @@ Mojo app which wants to send data and get stream of processed results will look 
 	use Mojolicious::Lite;
 
 	my $rp = Mojo::Redis::Processor->new({
-	    redis_read => 'redis://127.0.0.1:6379/0',
 	    data       => 'Data',
 	    trigger    => 'R_25',
 	});
@@ -47,9 +46,7 @@ Processor daemon code will look like:
 	while (1) {
 	    my $pid = $pm->start and next;
 
-	    my $rp = Mojo::Redis::Processor->new({
-	        redis_read => 'redis://127.0.0.1:6379/0',
-	    });
+	    my $rp = Mojo::Redis::Processor->new;
 
 	    $next = $rp->next();
 	    if ($next) {
