@@ -6,5 +6,6 @@ matrix:
   include:
     - perl: 5.14
       env: COVERAGE=1
+      secure: "P1BGVj/sY9OoJAfloEpQ38Wcaho9ceU293mIlHqtFdOx/WncX9RcEoDhOXPSu/0NaT2de1eoexJ6q0XPNy0yZoaMNWEiQIfqK35+e1ReAoNcfqHBdwlZAHA92seCv98M68j5Wac3NJZ+3BcHgil6mY7SkEGuuLTJE8f7ZMRI55A0sp0CvuKtTug5TX2dObe5uSQ2j9i91HMVVClSK4xOUHtTFtqGSt/K06JhUfjpRTZfcqOO6Ia8+J+HMreg7d3GGV1K9W+E6w8cuqTE1NyZCOx0jpedTpBFRYhPe2hx2nvh1CopQqxqWAyzE6i3gILjjKpgrsgvwEv6UJApUg/Img+lKdH6rjBeQWuzKv2GEo/Zb4fiN1UmPapD91uy4Yu/emnj5N4ywOzKddpWexh61+e5fNMeWbC3gJjDETUaiJVHAuXZyViZTEqblbANFFaz0xUxboN8VG5JtNzuP4w7ViQodsaCOvGMDGIuEm5t5HPjx1A5LxyrIqH/vqGm30ZUvHIZNBrDQ6TIVw7NUxEyTBB5FchuC2NkIiht9XegGQ5ew8scMi+ddMpQXKxCmbwqASel2R06WDDRN7cXIPbzlDgDGN0bkawnoblwNQzz/3PM0R6+Yd9T2mQKOUgh3FN1nV3ZTnXI8Q9O0vlMqPKD+qZCJvb4ReId1xsQ61W5J/Y="
 before_install:
   - eval $(curl https://travis-perl.github.io/init) --auto
