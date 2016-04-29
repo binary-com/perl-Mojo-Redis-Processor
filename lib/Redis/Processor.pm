@@ -1,21 +1,17 @@
 package Redis::Processor;
 
-use JSON;
 use Carp;
 use Array::Utils qw (array_minus);
 use Digest::MD5 qw(md5_hex);
 use Time::HiRes qw(usleep);
-
 use Mojo::Redis2;
 use RedisDB;
-
+use JSON::XS qw(encode_json decode_json);
 use strict;
 use warnings;
 
-my @REQUIRED = qw(data redis_read trigger);
-my @ALLOWED  = (qw(redis_write prefix expire usleep), @REQUIRED);
-
-use Data::Dumper;
+my @REQUIRED = qw(redis_read);
+my @ALLOWED  = (qw(data trigger redis_write prefix expire usleep), @REQUIRED);
 
 sub new {
 	my $class = shift;
@@ -29,9 +25,7 @@ sub new {
     croak "Error, invalid parameters:" . join(',', @invalid) if @invalid;
 
     bless $self, $class;
-
     $self->_initialize();
-
     return $self;
 }
 
@@ -73,7 +67,7 @@ sub _unique {
 
 sub _payload {
 	my $self = shift;
-	return JSON::to_json([$self->{data}, $self->{trigger}]);
+	return JSON::XS::encode_json([$self->{data}, $self->{trigger}]);
 }
 
 sub _job_counter {
@@ -124,7 +118,7 @@ sub _init_next{
 	my $self = shift;
 
 	my $min = $self->_write->get($self->_job_counter);
-	$self->_write->set($self->_worker_counter, $min);
+	$self->_write->set($self->_worker_counter, $min-1);
 
 	$self->{_next_initialized} = 1;
 }
@@ -140,8 +134,10 @@ sub next {
     while (not $payload = $self->_read->get($self->_job_load($next))) {
     	usleep($self->{usleep});
     }
+    my $tmp=JSON::XS::decode_json($payload);
 
-    $self->{data} = $payload;
+    $self->{data} = $tmp->[0];
+    $self->{trigger} = $tmp->[1];
     return {job=>$next, payload=>$payload};
 }
 
@@ -155,18 +151,21 @@ sub on_trigger {
 	my $self   = shift;
 	my $pricer = shift;
 
-	while(1){	
-		$self->_daemon_redis->subscribe($self->{trigger});
-		_publish($pricer->($self->{data}));
-		return if $self->_expired;
-	}
+	$self->_daemon_redis->subscription_loop(
+		default_callback=> sub {
+			my $c = shift;
+			$self->_publish($pricer->($self->{data}));
+			$c->unsubscribe() if $self->_expired;
+			}, 
+		subscribe=>[$self->{trigger}]
+	);
 }
 
 sub _publish {
 	my $self   = shift;
 	my $result = shift;
 
-	print "$result\n";
+	$self->_write->publish($self->_processed_channel, $result);
 }
 
 1;

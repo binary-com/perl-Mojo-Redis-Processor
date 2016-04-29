@@ -8,17 +8,15 @@ while (1) {
 
 	my $rp = Redis::Processor->new({
 		redis_read  => 'redis://127.0.0.1:6379/0',
-		data        => 'x',
-		trigger     => 'R_25',
 	});
 
     $data = $rp->next();
-    print $data->{job}, $data->{payload},"\n";
+    print "next job started\n";
 
-    # $redis_channel=$rp->on_trigger(sub {
-    #     my $payload = shift;
-    #     $rp->publish(price($rp));
-    #     alarm $timeout;
-    # });
+    $redis_channel=$rp->on_trigger(sub {
+        my $payload = shift;
+        return rand(100);
+    });
+    print "Done, ending!\n";
     $pm->finish;
 }
