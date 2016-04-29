@@ -7,9 +7,10 @@ WriteMakefile(
 		'Test::Most'  => 0,
 	},
 	PREREQ_PM => {
-		'Array::Utils' => 0,
-		'Mojo::Redis2' => 0,
-		'RedisDB'      => 0,
-		'JSON::XS'     => 0,
+		'Array::Utils'          => 0,
+		'Mojo::Redis2'          => 0,
+		'RedisDB'               => 0,
+		'JSON::XS'              => 0,
+		'Parallel::ForkManager' => 0,
 	},
 );
