@@ -8,6 +8,14 @@
 
 Mojo::Redis::PubSub - Message distribution and processing using Redis backend.
 
+# DESCRIPTION
+
+This module will encapsulate a communication process between Websocket code implemented as a Mojo app which need stream of prices and daemons which get the pricing parameters and publish market price whenever there is a market signal (trigger).
+
+As price that be common between different Mojo children they will race over setting a pricing request in Redis. It will be handles by SET NX in Redis.
+
+Daemon will take the pricing jobs for every Market signal calculate and publish the price back for Mojo children using Redis PUB/SUB.
+
 # VERSION
 
 0.01
@@ -35,10 +43,10 @@ Mojo app which wants to send data and get stream of processed results will look 
 
 Try it like:
 
-	$ perl -Ilib ws.pl daemon 
+	$ perl -Ilib ws.pl daemon
 
 
-Processor daemon code will look like: 
+Processor daemon code will look like:
 
 	use Mojo::Redis::Processor;
 	use Parallel::ForkManager;
@@ -76,8 +84,6 @@ Try it like:
 
 Daemon needs to pick a forking method and also handle ide processes and timeouts.
 
-
-# DESCRIPTION
 
 # SOURCE CODE
 
