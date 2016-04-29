@@ -1,4 +1,4 @@
-# perl-Mojo-Redis-Processsor
+# perl-Mojo-Redis-Processor
 
 # NAME
 
@@ -72,7 +72,7 @@ Daemon needs to pick a forking method and also handle ide processes and timeouts
 
 # SOURCE CODE
 
-[GitHub](https://github.com/binary-com/perl-Mojo-Redis-Processsor)
+[GitHub](https://github.com/binary-com/perl-Mojo-Redis-Processor)
 
 # AUTHOR
 
@@ -81,7 +81,7 @@ binary.com, `<perl at binary.com>`
 # BUGS
 
 Please report any bugs or feature requests to
-[https://github.com/binary-com/perl-Mojo-Redis-Processsor/issues](https://github.com/binary-com/perl-Mojo-Redis-Processsor/issues).
+[https://github.com/binary-com/perl-Mojo-Redis-Processor/issues](https://github.com/binary-com/perl-Mojo-Redis-Processor/issues).
 
 # LICENSE AND COPYRIGHT
 
