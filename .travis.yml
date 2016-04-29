@@ -1,0 +1,9 @@
+language: perl
+perl:
+  - "5.14"
+matrix:
+  include:
+    - perl: 5.14
+      env: COVERAGE=1
+before_install:
+  - eval $(curl https://travis-perl.github.io/init) --auto
