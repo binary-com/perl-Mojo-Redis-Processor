@@ -35,6 +35,26 @@ sub _initialize {
     $self->{expire}      = 60                   if !exists $self->{expire};
     $self->{usleep}      = 50                   if !exists $self->{usleep};
     $self->{redis_write} = $self->{redis_read}  if !exists $self->{redis_write};
+
+    $self->{_job_counter}       = $self->{prefix} . 'job';
+    $self->{_worker_counter}    = $self->{prefix} . 'worker';
+    $self->{_processed_channel} = $self->{prefix} . 'result';
+}
+
+sub _job_load {
+    my $self = shift;
+    my $job  = shift;
+    return $self->{prefix} . 'load::' . $job;
+}
+
+sub _unique {
+    my $self = shift;
+    return $self->{prefix} . md5_hex($self->_payload);
+}
+
+sub _payload {
+    my $self = shift;
+    return JSON::XS::encode_json([$self->{data}, $self->{trigger}]);
 }
 
 sub _read {
@@ -58,37 +78,6 @@ sub _daemon_redis {
 
     $self->{daemon_redis_comm} = RedisDB->new(url => $self->{redis_write}) if !$self->{daemon_redis_comm};
     return $self->{daemon_redis_comm};
-}
-
-sub _unique {
-    my $self = shift;
-    return $self->{prefix} . md5_hex($self->_payload);
-}
-
-sub _payload {
-    my $self = shift;
-    return JSON::XS::encode_json([$self->{data}, $self->{trigger}]);
-}
-
-sub _job_counter {
-    my $self = shift;
-    return $self->{prefix} . 'job';
-}
-
-sub _worker_counter {
-    my $self = shift;
-    return $self->{prefix} . 'worker';
-}
-
-sub _job_load {
-    my $self = shift;
-    my $job  = shift;
-    return $self->{prefix} . 'load::' . $job;
-}
-
-sub _processed_channel {
-    my $self = shift;
-    return $self->{prefix} . 'result';
 }
 
 sub send {
