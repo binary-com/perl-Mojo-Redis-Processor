@@ -1,6 +1,7 @@
 language: perl
 perl:
   - "5.14"
+services: redis-server
 matrix:
   include:
     - perl: 5.14
