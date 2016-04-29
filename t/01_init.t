@@ -8,6 +8,11 @@ throws_ok { Mojo::Redis::Processor->new({data => 'DATA'}) } qr/Error, missing pa
 lives_ok { Mojo::Redis::Processor->new(data=>'DATA', trigger=>'TRIGGER') } 'data and trigger together will pass the minimum';
 lives_ok { Mojo::Redis::Processor->new(data=>'DATA', trigger=>'TRIGGER', prefix=>1, expire=>1, usleep=>1, redis_read=>1, redis_write=>1, retry=>1) } 'setting all params still works.';
 
+lives_ok { 
+	my $rp = Mojo::Redis::Processor->new(redis_write => 'redis://127.0.0.1:6380/0');
+	$rp->_write;
+} 'setting redis_write to a different value than redis_read and calling it will work.';
+
 RedisDB->new->flushall;
 
 # Websocket part

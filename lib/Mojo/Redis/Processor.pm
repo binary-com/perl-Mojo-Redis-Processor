@@ -102,7 +102,6 @@ sub new {
 
     my @REQUIRED = qw();
     if (exists $self->{data}) {
-        print $self->{data}, "\n";
         @REQUIRED = qw(data trigger);
     }
 
@@ -151,7 +150,7 @@ sub _payload {
 
 sub _read {
     my $self = shift;
-    $self->{read_conn} = Mojo::Redis2->new(url => $self->{redis_write}) if !$self->{read_conn};
+    $self->{read_conn} = Mojo::Redis2->new(url => $self->{redis_read}) if !$self->{read_conn};
 
     return $self->{read_conn};
 }
@@ -159,7 +158,7 @@ sub _read {
 sub _write {
     my $self = shift;
 
-    return $self->_read if $self->{redis_read} = $self->{redis_write};
+    return $self->_read if $self->{redis_read} eq $self->{redis_write};
 
     $self->{write_conn} = Mojo::Redis2->new(url => $self->{redis_write}) if !$self->{write_conn};
     return $self->{write_conn};
