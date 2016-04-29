@@ -10,12 +10,19 @@ use JSON::XS qw(encode_json decode_json);
 use strict;
 use warnings;
 
-my @REQUIRED = qw(redis_read);
-my @ALLOWED = (qw(data trigger redis_write prefix expire usleep retry), @REQUIRED);
+our $VERSION = '0.1';
+
+my @ALLOWED = qw(data trigger redis_read redis_write prefix expire usleep retry);
 
 sub new {
     my $class = shift;
     my $self = ref $_[0] ? $_[0] : {@_};
+
+    my @REQUIRED = qw();
+    if (exists $self->{data}) {
+        print $self->{data}, "\n";
+        @REQUIRED = qw(data trigger);
+    }
 
     my @missing = grep { !$self->{$_} } @REQUIRED;
     croak "Error, missing parameters: " . join(',', @missing) if @missing;
@@ -31,11 +38,12 @@ sub new {
 
 sub _initialize {
     my $self = shift;
-    $self->{prefix}      = 'Redis::Processor::' if !exists $self->{prefix};
-    $self->{expire}      = 60                   if !exists $self->{expire};
-    $self->{usleep}      = 10                   if !exists $self->{usleep};
-    $self->{redis_write} = $self->{redis_read}  if !exists $self->{redis_write};
-    $self->{retry}       = 1                    if !exists $self->{retry};
+    $self->{prefix}      = 'Redis::Processor::'       if !exists $self->{prefix};
+    $self->{expire}      = 60                         if !exists $self->{expire};
+    $self->{usleep}      = 10                         if !exists $self->{usleep};
+    $self->{redis_read}  = 'redis://127.0.0.1:6379/0' if !exists $self->{redis_write};
+    $self->{redis_write} = $self->{redis_read}        if !exists $self->{redis_write};
+    $self->{retry}       = 1                          if !exists $self->{retry};
 
     $self->{_job_counter}       = $self->{prefix} . 'job';
     $self->{_worker_counter}    = $self->{prefix} . 'worker';

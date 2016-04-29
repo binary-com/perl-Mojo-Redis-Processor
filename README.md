@@ -30,6 +30,10 @@ Mojo app which wants to send data and get stream of processed results will look 
 
 	app->start;
 
+Try it like:
+
+	$ perl -Ilib ws.pl daemon 
+
 
 Processor daemon code will look like: 
 
@@ -64,6 +68,10 @@ Processor daemon code will look like:
 	    }
 	    $pm->finish;
 	}
+
+Try it like:
+
+	$ perl -Ilib daemon.pl
 
 Daemon needs to pick a forking method and also handle ide processes and timeouts.
 

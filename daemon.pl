@@ -8,9 +8,7 @@ $pm = new Parallel::ForkManager(MAX_WORKERS);
 while (1) {
     my $pid = $pm->start and next;
 
-    my $rp = Mojo::Redis::Processor->new({
-        redis_read => 'redis://127.0.0.1:6379/0',
-    });
+    my $rp = Mojo::Redis::Processor->new;
 
     $next = $rp->next();
     if ($next) {
