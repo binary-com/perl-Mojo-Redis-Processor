@@ -7,14 +7,14 @@ use Mojo::Redis2;
 
 RedisDB->new->flushall;
 
-my $pm = Parallel::ForkManager->new(2);
+my $pm = Parallel::ForkManager->new(1);
 
-while () {
+for (my $i = 0; $i < 1; $i++) {
 	my $pid = $pm->start and last;
 
-	usleep 100;
+	usleep 1000;
 	RedisDB->new->publish('R_25', 1);
-	usleep 100;
+	usleep 1000;
 	RedisDB->new->expire('Redis::Processor::34b18bba480282531e815255f2012110', 0);
 	RedisDB->new->publish('R_25', 1);
 
