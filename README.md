@@ -1,4 +1,4 @@
-# perl-Mojo-Redis-PubSub
+# perl-Mojo-Redis-Processsor
 
 # NAME
 
@@ -10,58 +10,69 @@ Mojo::Redis::PubSub - Message distribution and processing using Redis backend.
 
 
 # SYNOPSIS
-Publisher code will look like:
+Mojo app which wants to send data and get stream of processed results will look like:
 
-	use Mojo::Redis::PubSub;
+	use Mojo::Redis::Processor;
+	use Mojolicious::Lite;
 
-	$mrp = Mojo::Redis::PubSub->new({
-		redis_read  => 'redis://127.0.0.1:6381/0',
-		redis_write => 'redis://@passs:127.0.0.1:6380/0',
-		key_prefix  => 'binary::',
-		unique      => $lang.md5($pricing_details),
-		data        => $pricing_details,
-		trigger     => 'R_25',
+	my $rp = Mojo::Redis::Processor->new({
+	    redis_read => 'redis://127.0.0.1:6379/0',
+	    data       => 'Data',
+	    trigger    => 'R_25',
 	});
 
-	$mrp->send();
-	$redis_channel=$mrp->subscribe_processed(sub {
-		$c->send({json => $_});
-	});
+	$rp->send();
+	my $redis_channel = $rp->on_processed(
+	    sub {
+	        my ($message, $channel) = @_;
+	        print "Got a new result [$message]\n";
+	    });
 
-Processor code will look like: 
+	app->start;
 
-    use Mojo::Redis::PubSub;
+
+Processor daemon code will look like: 
+
+	use Mojo::Redis::Processor;
 	use Parallel::ForkManager;
 
-	$pm = new Parallel::ForkManager($MAX_WORKERS);
+	use constant MAX_WORKERS  => 1;
+
+	$pm = new Parallel::ForkManager(MAX_WORKERS);
 
 	while (1) {
-		my $pid = $pm->start and next; 
+	    my $pid = $pm->start and next;
 
-		$mp = Mojo::Redis::PubSub->new({
-			redis_read=>  'redis://127.0.0.1:6381/0',
-			redis_write=> 'redis://@passs:127.0.0.1:6380/0',
-			key_prefix  => 'binary::',
-		});
+	    my $rp = Mojo::Redis::Processor->new({
+	        redis_read => 'redis://127.0.0.1:6379/0',
+	    });
 
-		$data = $mp->next();
-		local $SIG{ALRM} = sub { $pm->finish; };
-		alarm $timeout;
+	    $next = $rp->next();
+	    if ($next) {
+	        print "next job started [$next].\n";
 
-		$redis_channel=$mp->subscribe_trigger(sub {
-			my $payload = shift;
-			$mp->publish(price($mp));
-			alarm $timeout;
-		});
+	        $redis_channel = $rp->on_trigger(
+	            sub {
+	                my $payload = shift;
+	                print "processing payload\n";
+	                return rand(100);
+	            });
+	        print "Job done, exiting the child!\n";
+	    } else {
+	        print "no job found\n";
+	        sleep 1;
+	    }
+	    $pm->finish;
 	}
 
+Daemon needs to pick a forking method and also handle ide processes and timeouts.
 
 
 # DESCRIPTION
 
 # SOURCE CODE
 
-[GitHub](https://github.com/binary-com/perl-Mojo-Redis-PubSub)
+[GitHub](https://github.com/binary-com/perl-Mojo-Redis-Processsor)
 
 # AUTHOR
 
@@ -70,7 +81,7 @@ binary.com, `<perl at binary.com>`
 # BUGS
 
 Please report any bugs or feature requests to
-[https://github.com/binary-com/perl-Mojo-Redis-PubSub/issues](https://github.com/binary-com/perl-Mojo-Redis-PubSub/issues).
+[https://github.com/binary-com/perl-Mojo-Redis-Processsor/issues](https://github.com/binary-com/perl-Mojo-Redis-Processsor/issues).
 
 # LICENSE AND COPYRIGHT
 

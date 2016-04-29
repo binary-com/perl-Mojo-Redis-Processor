@@ -133,7 +133,6 @@ sub next {
 sub _expired {
     my $self = shift;
     return 1 if $self->_read->ttl($self->_unique) <= 0;
-    print $self->_unique, " : ", $self->_read->ttl($self->_unique), "\n";
     return;
 }
 

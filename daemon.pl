@@ -1,7 +1,9 @@
 use Mojo::Redis::Processor;
 use Parallel::ForkManager;
 
-$pm = new Parallel::ForkManager(1);
+use constant MAX_WORKERS  => 1;
+
+$pm = new Parallel::ForkManager(MAX_WORKERS);
 
 while (1) {
     my $pid = $pm->start and next;
@@ -17,9 +19,10 @@ while (1) {
         $redis_channel = $rp->on_trigger(
             sub {
                 my $payload = shift;
+                print "processing payload\n";
                 return rand(100);
             });
-        print "Done!\n";
+        print "Job done, exiting the child!\n";
     } else {
         print "no job found\n";
         sleep 1;
