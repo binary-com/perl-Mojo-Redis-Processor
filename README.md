@@ -64,7 +64,7 @@ Processor daemon code will look like:
 	    if ($next) {
 	        print "next job started [$next].\n";
 
-	        $redis_channel = $rp->on_trigger(
+	        $rp->on_trigger(
 	            sub {
 	                my $payload = shift;
 	                print "processing payload\n";
