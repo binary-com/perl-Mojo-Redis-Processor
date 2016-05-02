@@ -128,8 +128,6 @@ sub _initialize {
 
     $self->{_job_counter}       = $self->{prefix} . 'job';
     $self->{_worker_counter}    = $self->{prefix} . 'worker';
-    $self->{_processed_channel} = $self->{prefix} . 'result';
-
 }
 
 sub _job_load {
@@ -146,6 +144,11 @@ sub _unique {
 sub _payload {
     my $self = shift;
     return JSON::XS::encode_json([$self->{data}, $self->{trigger}]);
+}
+
+sub _processed_channel {
+    my $self = shift;
+    return $self->{prefix} . $self->_unique;
 }
 
 sub _read {
@@ -201,7 +204,7 @@ sub on_processed {
             $self->_write->expire($self->_unique, $self->{expire});
             $code->($msg, $channel);
         });
-    $self->_read->subscribe([$self->{_processed_channel}]);
+    $self->_read->subscribe([$self->_processed_channel]);
 }
 
 =head3 C<< next()  >>
@@ -262,7 +265,7 @@ sub _publish {
     my $self   = shift;
     my $result = shift;
 
-    $self->_write->publish($self->{_processed_channel}, $result);
+    $self->_write->publish($self->_processed_channel, $result);
 }
 
 1;
