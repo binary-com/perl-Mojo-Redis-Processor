@@ -94,7 +94,7 @@ Daemon needs to pick a forking method and also handle ide processes and timeouts
 =cut
 
 
-my @ALLOWED = qw(data trigger redis_read redis_write prefix expire usleep retry);
+my @ALLOWED = qw(data trigger redis_read redis_write read_conn write_conn prefix expire usleep retry);
 
 sub new {
     my $class = shift;
@@ -148,7 +148,7 @@ sub _payload {
 
 sub _processed_channel {
     my $self = shift;
-    return $self->{prefix} . $self->_unique;
+    return $self->_unique;
 }
 
 sub _read {
@@ -161,9 +161,7 @@ sub _read {
 sub _write {
     my $self = shift;
 
-    return $self->_read if $self->{redis_read} eq $self->{redis_write};
-
-    $self->{write_conn} = Mojo::Redis2->new(url => $self->{redis_write}) if !$self->{write_conn};
+    $self->{write_conn} = RedisDB->new(url => $self->{redis_write}) if !$self->{write_conn};
     return $self->{write_conn};
 }
 
@@ -182,10 +180,14 @@ Will send the Mojo app data processing request. This is mainly a queueing job. J
 sub send {
     my $self = shift;
 
+    # race for setting a unique key
     if ($self->_write->setnx($self->_unique, 1)) {
+        # if successful first set the key TTL. It must go away if no worker took the job.
+        $self->_write->expire($self->_unique, $self->{expire});
+
         my $job = $self->_write->incr($self->{_job_counter});
         $self->_write->set($self->_job_load($job), $self->_payload);
-        $self->_write->expire($self->_unique, $self->{expire});
+        $self->_write->expire($self->_job_load($job), $self->{expire});
     }
 }
 
