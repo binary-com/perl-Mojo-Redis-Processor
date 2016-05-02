@@ -18,7 +18,7 @@ Daemon will take the pricing jobs for every Market signal calculate and publish 
 
 # VERSION
 
-0.01
+0.02
 
 
 # SYNOPSIS
