@@ -94,7 +94,7 @@ Daemon needs to pick a forking method and also handle ide processes and timeouts
 =cut
 
 
-my @ALLOWED = qw(data trigger redis_read redis_write read_conn write_conn prefix expire usleep retry);
+my @ALLOWED = qw(data trigger redis_read redis_write read_conn write_conn daemon_conn prefix expire usleep retry);
 
 sub new {
     my $class = shift;
@@ -168,8 +168,8 @@ sub _write {
 sub _daemon_redis {
     my $self = shift;
 
-    $self->{daemon_redis_comm} = RedisDB->new(url => $self->{redis_write}) if !$self->{daemon_redis_comm};
-    return $self->{daemon_redis_comm};
+    $self->{daemon_conn} = RedisDB->new(url => $self->{redis_write}) if !$self->{daemon_conn};
+    return $self->{daemon_conn};
 }
 
 =head3 C<< send()  >>
@@ -241,6 +241,7 @@ sub next {
 
 sub _expired {
     my $self = shift;
+
     return 1 if $self->_read->ttl($self->_unique) <= 0;
     return;
 }
