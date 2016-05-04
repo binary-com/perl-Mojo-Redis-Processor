@@ -94,8 +94,6 @@ Daemon needs to pick a forking method and also handle ide processes and timeouts
 
 =cut
 
-
-
 my @ALLOWED = qw(data trigger redis_read redis_write read_conn write_conn daemon_conn prefix expire usleep retry);
 
 =head2 C<< new(%Options)  >>
@@ -176,8 +174,8 @@ sub _initialize {
     $self->{redis_write} = $self->{redis_read}        if !exists $self->{redis_write};
     $self->{retry}       = 1                          if !exists $self->{retry};
 
-    $self->{_job_counter}       = $self->{prefix} . 'job';
-    $self->{_worker_counter}    = $self->{prefix} . 'worker';
+    $self->{_job_counter}    = $self->{prefix} . 'job';
+    $self->{_worker_counter} = $self->{prefix} . 'worker';
 }
 
 sub _job_load {
@@ -227,6 +225,7 @@ sub _daemon_redis {
 Will send the Mojo app data processing request. This is mainly a queueing job. Job will expire if no worker take it in time. If more than one app try to register the same job Redis SET NX will only assign one of them to proceed.
 
 =cut
+
 sub send {
     my $self = shift;
 
@@ -246,6 +245,7 @@ sub send {
 Mojo app will call this to register a code reference that will be triggered everytime there is a result. Results will be triggered and published based on trigger option.
 
 =cut
+
 sub on_processed {
     my $self = shift;
     my $code = shift;
@@ -264,6 +264,7 @@ sub on_processed {
 Daemon will call this to start the next job. If it return empty it meam there was no job found after "retry".
 
 =cut
+
 sub next {
     my $self = shift;
 
@@ -301,6 +302,7 @@ sub _expired {
 Daemon will call this to register a processor code reference that will be called everytime trigger happens. The return value will be passed to Mojo apps which requested it using Redis Pub/Sub system.
 
 =cut
+
 sub on_trigger {
     my $self   = shift;
     my $pricer = shift;
