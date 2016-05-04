@@ -94,6 +94,10 @@ Daemon needs to pick a forking method and also handle ide processes and timeouts
 
 =cut
 
+=head1 METHODS
+
+=cut
+
 my @ALLOWED = qw(data trigger redis_read redis_write read_conn write_conn daemon_conn prefix expire usleep retry);
 
 =head2 C<< new(%Options)  >>
