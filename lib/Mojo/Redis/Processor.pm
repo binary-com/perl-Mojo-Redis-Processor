@@ -91,10 +91,60 @@ Try it like:
     $ perl -Ilib daemon.pl
 
 Daemon needs to pick a forking method and also handle ide processes and timeouts.
+
 =cut
 
 
+
 my @ALLOWED = qw(data trigger redis_read redis_write read_conn write_conn daemon_conn prefix expire usleep retry);
+
+=head2 C<< new(%Options)  >>
+
+This will instantiate the object for both reqeust sender and processor. Type depends on options which are passed.
+
+=over
+
+=item B<data>
+
+Data for processing that we pass to the $pricer code.
+
+=item B<trigger>
+
+Trigger will be a redis channel that will trigger call of pricer code.
+
+=item B<data>
+
+Data for processing that we pass to the $pricer code.
+
+=item B<redis_read, redis_write>
+
+Redis URL for read and write. Write means there is a central and replicated redis. redis_write will default to redis_read if it is not passed.
+
+=item B<read_conn, write_conn, daemon_conn>
+
+Setting redis connections directly. daemon_conn is used to wait for trigger.
+
+=item B<prefix>
+
+Key prefix that is used in redis. If it is not set it will default to "Redis::Processor::".
+
+=item B<expire>
+
+Expire time that client will set after receiving new price from price processor. Price process will continue to price as long as someone is extending this expiry.
+
+=item B<usleep>
+
+Sleep time if there was no job available.
+
+=item B<retry>
+
+Retry time to wait for new job become available. If no job become available next() will return empty.
+
+=back
+
+This will new the thing.
+
+=cut
 
 sub new {
     my $class = shift;
@@ -270,5 +320,93 @@ sub _publish {
 
     $self->_write->publish($self->_processed_channel, $result);
 }
+
+=head1 AUTHOR
+
+Binary.com, C<< <support at binary.com> >>
+
+=head1 BUGS
+
+Please report any bugs or feature requests to C<bug-mojo-redis-processor at rt.cpan.org>, or through
+the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=mojo-redis-processor>.  I will be notified, and then you'll
+automatically be notified of progress on your bug as I make changes.
+
+
+
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc Mojo::Redis::Processor
+
+
+You can also look for information at:
+
+=over 4
+
+=item * RT: CPAN's request tracker (report bugs here)
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=mojo-redis-processor>
+
+=item * AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/mojo-redis-processor>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/mojo-redis-processor>
+
+=item * Search CPAN
+
+L<http://search.cpan.org/dist/mojo-redis-processor/>
+
+=back
+
+
+=head1 ACKNOWLEDGEMENTS
+
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2016 Binary.com.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the the Artistic License (2.0). You may obtain a
+copy of the full license at:
+
+L<http://www.perlfoundation.org/artistic_license_2_0>
+
+Any use, modification, and distribution of the Standard or Modified
+Versions is governed by this Artistic License. By using, modifying or
+distributing the Package, you accept this license. Do not use, modify,
+or distribute the Package, if you do not accept this license.
+
+If your Modified Version has been derived from a Modified Version made
+by someone other than you, you are nevertheless required to ensure that
+your Modified Version complies with the requirements of this license.
+
+This license does not grant you the right to use any trademark, service
+mark, tradename, or logo of the Copyright Holder.
+
+This license includes the non-exclusive, worldwide, free-of-charge
+patent license to make, have made, use, offer to sell, sell, import and
+otherwise transfer the Package with respect to any patent claims
+licensable by the Copyright Holder that are necessarily infringed by the
+Package. If you institute patent litigation (including a cross-claim or
+counterclaim) against any party alleging that the Package constitutes
+direct or contributory patent infringement, then this Artistic License
+to you shall terminate on the date that such litigation is filed.
+
+Disclaimer of Warranty: THE PACKAGE IS PROVIDED BY THE COPYRIGHT HOLDER
+AND CONTRIBUTORS "AS IS' AND WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, OR NON-INFRINGEMENT ARE DISCLAIMED TO THE EXTENT PERMITTED BY
+YOUR LOCAL LAW. UNLESS REQUIRED BY LAW, NO COPYRIGHT HOLDER OR
+CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR
+CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+=cut
 
 1;
