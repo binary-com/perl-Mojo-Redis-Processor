@@ -20,7 +20,7 @@ Version 0.02
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 DESCRIPTION
 
@@ -220,7 +220,7 @@ sub _daemon_redis {
     return $self->{daemon_conn};
 }
 
-=head3 C<< send()  >>
+=head2 C<< send()  >>
 
 Will send the Mojo app data processing request. This is mainly a queueing job. Job will expire if no worker take it in time. If more than one app try to register the same job Redis SET NX will only assign one of them to proceed.
 
@@ -240,7 +240,7 @@ sub send {
     }
 }
 
-=head3 C<< on_processed($code)  >>
+=head2 C<< on_processed($code)  >>
 
 Mojo app will call this to register a code reference that will be triggered everytime there is a result. Results will be triggered and published based on trigger option.
 
@@ -259,7 +259,7 @@ sub on_processed {
     $self->_read->subscribe([$self->_processed_channel]);
 }
 
-=head3 C<< next()  >>
+=head2 C<< next()  >>
 
 Daemon will call this to start the next job. If it return empty it meam there was no job found after "retry".
 
@@ -297,7 +297,7 @@ sub _expired {
     return;
 }
 
-=head3 C<< on_trigger()  >>
+=head2 C<< on_trigger()  >>
 
 Daemon will call this to register a processor code reference that will be called everytime trigger happens. The return value will be passed to Mojo apps which requested it using Redis Pub/Sub system.
 
