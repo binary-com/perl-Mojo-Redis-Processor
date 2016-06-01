@@ -20,7 +20,7 @@ Version 0.02
 
 =cut
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 =head1 DESCRIPTION
 
@@ -319,7 +319,7 @@ sub on_trigger {
             $self->_write->expire($self->_unique, $self->{expire});
             if ($count == 0) {
                 $c->unsubscribe();
-                $self->del($self->_unique);
+                $self->_write->del($self->_unique);
             }
         },
         subscribe => [$self->{trigger}]);
