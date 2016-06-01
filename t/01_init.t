@@ -52,6 +52,8 @@ RedisDB->new->flushall;
     is($rp->{trigger}, 'R_25', 'got the trigger correct');
     is($rp->_expired,  undef,  'at first a new job should not be expired');
 
+    RedisDB->new->expire('Redis::Processor::34b18bba480282531e815255f2012110', 0);
+    is($rp->_expired, 1, 'no activity for sometime should set the expiry');
 }
 
 done_testing();
