@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/binary-com/perl-Mojo-Redis-Processor.svg?branch=master)](https://travis-ci.org/binary-com/perl-Mojo-Redis-Processor)
-[![Coverage Status](https://coveralls.io/repos/github/binary-com/perl-Mojo-Redis-Processor/badge.svg?branch=master)](https://coveralls.io/github/binary-com/perl-Mojo-Redis-Processor?branch=master)
+[![codecov](https://codecov.io/gh/binary-com/perl-Mojo-Redis-Processor/branch/master/graph/badge.svg)](https://codecov.io/gh/binary-com/perl-Mojo-Redis-Processor)
+
 
 
 # perl-Mojo-Redis-Processor
