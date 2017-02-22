@@ -1,4 +1,6 @@
 package Mojo::Redis::Processor;
+use strict;
+use warnings;
 
 use Carp;
 use Array::Utils qw (array_minus);
@@ -7,16 +9,10 @@ use Time::HiRes qw(usleep);
 use Mojo::Redis2;
 use RedisDB;
 use JSON::XS qw(encode_json decode_json);
-use strict;
-use warnings;
 
 =head1 NAME
 
 Mojo::Redis::Processor - Encapsulates the process for a Mojo app to send an expensive job to a daemon using Redis underneath and Redis SET NX and Redis Pub/Sub.
-
-=head1 VERSION
-
-Version 0.02
 
 =cut
 
