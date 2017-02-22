@@ -47,10 +47,10 @@ Mojo app which wants to send data and get stream of processed results will look 
 
 Try it like:
 
-    $ perl -Ilib ws.pl daemon 
+    $ perl -Ilib ws.pl daemon
 
 
-Processor daemon code will look like: 
+Processor daemon code will look like:
 
     use Mojo::Redis::Processor;
     use Parallel::ForkManager;
@@ -144,7 +144,7 @@ This will new the thing.
 
 =cut
 
-sub new {
+sub new { ## no critic (ArgUnpacking)
     my $class = shift;
     my $self = ref $_[0] ? $_[0] : {@_};
 
@@ -176,6 +176,7 @@ sub _initialize {
 
     $self->{_job_counter}    = $self->{prefix} . 'job';
     $self->{_worker_counter} = $self->{prefix} . 'worker';
+    return;
 }
 
 sub _job_load {
@@ -226,7 +227,7 @@ Will send the Mojo app data processing request. This is mainly a queueing job. J
 
 =cut
 
-sub send {
+sub send { ## no critic (ProhibitBuiltinHomonyms)
     my $self = shift;
 
     # race for setting a unique key
@@ -238,6 +239,7 @@ sub send {
         $self->_write->set($self->_job_load($job), $self->_payload);
         $self->_write->expire($self->_job_load($job), $self->{expire});
     }
+    return;
 }
 
 =head2 C<< on_processed($code)  >>
@@ -252,10 +254,11 @@ sub on_processed {
 
     $self->_read->on(
         message => sub {
-            my ($redis, $msg, $channel) = @_;
+            my (undef, $msg, $channel) = @_;
             $code->($msg, $channel);
         });
     $self->_read->subscribe([$self->_processed_channel]);
+    return;
 }
 
 =head2 C<< next()  >>
@@ -264,13 +267,13 @@ Daemon will call this to start the next job. If it return empty it meam there wa
 
 =cut
 
-sub next {
+sub next { ## no critic (ProhibitBuiltinHomonyms)
     my $self = shift;
 
     my $last_job    = $self->_read->get($self->{_job_counter});
     my $last_worker = $self->_read->get($self->{_worker_counter});
 
-    return if (!$last_job or ($last_worker && $last_job <= $last_worker));
+    return if (!$last_job || ($last_worker && $last_job <= $last_worker));
 
     my $next = $self->_write->incr($self->{_worker_counter});
     my $payload;
@@ -319,6 +322,7 @@ sub on_trigger {
             }
         },
         subscribe => [$self->{trigger}]);
+    return;
 }
 
 sub _publish {
@@ -326,6 +330,7 @@ sub _publish {
     my $result = shift;
 
     $self->_write->publish($self->_processed_channel, $result);
+    return;
 }
 
 =head1 AUTHOR
@@ -374,45 +379,6 @@ L<http://search.cpan.org/dist/mojo-redis-processor/>
 =head1 ACKNOWLEDGEMENTS
 
 
-=head1 LICENSE AND COPYRIGHT
-
-Copyright 2016 Binary.com.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of the the Artistic License (2.0). You may obtain a
-copy of the full license at:
-
-L<http://www.perlfoundation.org/artistic_license_2_0>
-
-Any use, modification, and distribution of the Standard or Modified
-Versions is governed by this Artistic License. By using, modifying or
-distributing the Package, you accept this license. Do not use, modify,
-or distribute the Package, if you do not accept this license.
-
-If your Modified Version has been derived from a Modified Version made
-by someone other than you, you are nevertheless required to ensure that
-your Modified Version complies with the requirements of this license.
-
-This license does not grant you the right to use any trademark, service
-mark, tradename, or logo of the Copyright Holder.
-
-This license includes the non-exclusive, worldwide, free-of-charge
-patent license to make, have made, use, offer to sell, sell, import and
-otherwise transfer the Package with respect to any patent claims
-licensable by the Copyright Holder that are necessarily infringed by the
-Package. If you institute patent litigation (including a cross-claim or
-counterclaim) against any party alleging that the Package constitutes
-direct or contributory patent infringement, then this Artistic License
-to you shall terminate on the date that such litigation is filed.
-
-Disclaimer of Warranty: THE PACKAGE IS PROVIDED BY THE COPYRIGHT HOLDER
-AND CONTRIBUTORS "AS IS' AND WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
-THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, OR NON-INFRINGEMENT ARE DISCLAIMED TO THE EXTENT PERMITTED BY
-YOUR LOCAL LAW. UNLESS REQUIRED BY LAW, NO COPYRIGHT HOLDER OR
-CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR
-CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =cut
 
