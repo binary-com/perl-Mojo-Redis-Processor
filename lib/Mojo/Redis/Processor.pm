@@ -16,7 +16,7 @@ Mojo::Redis::Processor - Encapsulates the process for a Mojo app to send an expe
 
 =cut
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 =head1 DESCRIPTION
 
@@ -144,7 +144,7 @@ This will new the thing.
 
 =cut
 
-sub new { ## no critic (ArgUnpacking)
+sub new {    ## no critic (ArgUnpacking)
     my $class = shift;
     my $self = ref $_[0] ? $_[0] : {@_};
 
@@ -227,7 +227,7 @@ Will send the Mojo app data processing request. This is mainly a queueing job. J
 
 =cut
 
-sub send { ## no critic (ProhibitBuiltinHomonyms)
+sub send {    ## no critic (ProhibitBuiltinHomonyms)
     my $self = shift;
 
     # race for setting a unique key
@@ -267,7 +267,7 @@ Daemon will call this to start the next job. If it return empty it meam there wa
 
 =cut
 
-sub next { ## no critic (ProhibitBuiltinHomonyms)
+sub next {    ## no critic (ProhibitBuiltinHomonyms)
     my $self = shift;
 
     my $last_job    = $self->_read->get($self->{_job_counter});
@@ -313,7 +313,7 @@ sub on_trigger {
 
     $self->_daemon_redis->subscription_loop(
         default_callback => sub {
-            my $c = shift;
+            my $c     = shift;
             my $count = $self->_publish($pricer->($self->{data}));
             $self->_write->expire($self->_unique, $self->{expire});
             if ($count == 0) {
