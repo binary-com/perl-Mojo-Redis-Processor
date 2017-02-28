@@ -1,4 +1,11 @@
-0.01    2 May 2016
-        Initial version.
+{{$NEXT}}
+
+0.07      2017-02-27 07:47:53+00:00 UTC
+        Switch to dzil
+
+0.06
 0.02    2 May 2016
         Change of channel name.
+
+0.01    2 May 2016
+        Initial version.
