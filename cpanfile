@@ -1,5 +1,5 @@
 requires 'Array::Utils';
-requires 'JSON::XS';
+requires 'JSON::MaybeXS';
 requires 'Mojo::Redis2';
 requires 'Parallel::ForkManager';
 requires 'RedisDB';
