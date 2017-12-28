@@ -8,7 +8,8 @@ use Digest::MD5 qw(md5_hex);
 use Time::HiRes qw(usleep);
 use Mojo::Redis2;
 use RedisDB;
-use JSON::XS qw(encode_json decode_json);
+use Encode;
+use JSON::MaybeXS;
 
 =head1 NAME
 
@@ -192,7 +193,7 @@ sub _unique {
 
 sub _payload {
     my $self = shift;
-    return JSON::XS::encode_json([$self->{data}, $self->{trigger}]);
+    return Encode::encode_utf8(JSON::MaybeXS->new->encode([$self->{data}, $self->{trigger}]));
 }
 
 sub _processed_channel {
@@ -284,7 +285,7 @@ sub next {    ## no critic (ProhibitBuiltinHomonyms)
     }
     return if not $payload;
 
-    my $tmp = JSON::XS::decode_json($payload);
+    my $tmp = JSON::MaybeXS->new->decode(Encode::decode_utf8($payload));
 
     $self->{data}    = $tmp->[0];
     $self->{trigger} = $tmp->[1];
